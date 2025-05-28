@@ -24,6 +24,11 @@ public class CatalogItem
     public int CatalogBrandId { get; set; }
 
     public CatalogBrand CatalogBrand { get; set; }
+    
+    public ICollection<ProductReview> Reviews { get; set; }
+    
+    [JsonIgnore]
+    public double? AverageRating { get; set; }
 
     // Quantity in stock
     public int AvailableStock { get; set; }
