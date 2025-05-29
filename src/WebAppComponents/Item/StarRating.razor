@@ -1,0 +1,25 @@
+@namespace eShop.WebAppComponents.Item
+
+<div class="star-rating @CssClass" title="@Title">
+    @for (int i = 1; i <= 5; i++)
+    {
+        int starNumber = i;
+        <span class="star @(starNumber <= Rating ? "filled" : "empty")" 
+              @onclick="() => OnStarClick?.Invoke(starNumber)"
+              style="cursor: @(OnStarClick != null ? "pointer" : "default")">
+            ★
+        </span>
+    }
+    @if (ShowRatingText && Rating > 0)
+    {
+        <span class="rating-text">(@Rating.ToString("F1"))</span>
+    }
+</div>
+
+@code {
+    [Parameter] public double Rating { get; set; }
+    [Parameter] public bool ShowRatingText { get; set; } = false;
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public Action<int>? OnStarClick { get; set; }
+}

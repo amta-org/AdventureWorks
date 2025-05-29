@@ -73,3 +73,47 @@ a {
         padding: 0 3rem 0 3rem;
     }    
 }
+
+.product-reviews {
+    padding: 0 5rem 2rem 10rem;
+    margin-top: 3rem;
+    border-top: 1px solid #eee;
+    padding-top: 2rem;
+}
+
+.product-reviews h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.write-review-prompt {
+    margin: 1rem 0;
+}
+
+.login-prompt {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.login-prompt a {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+@media only screen and (max-width: 480px) { 
+    .product-reviews {
+        padding: 1rem;
+        margin-top: 2rem;
+    }
+}
+
+@media only screen and (min-width: 481px) and (max-width: 1024px) { 
+    .product-reviews {
+        padding: 0 3rem 2rem 3rem;
+        margin-top: 2rem;
+    }
+}
