@@ -1,5 +1,6 @@
 ﻿@page "/item/{itemId:int}"
 @using System.Net
+@using eShop.WebAppComponents.Item
 @inject CatalogService CatalogService
 @inject BasketState BasketState
 @inject NavigationManager Nav
@@ -51,6 +52,39 @@
             }
         </div>
     </div>
+
+    <!-- Reviews Section -->
+    <div class="product-reviews">
+        <h2>Customer Reviews</h2>
+        
+        <ReviewsSummary Summary="@ratingsSummary" />
+        
+        @if (isLoggedIn)
+        {
+            @if (!showReviewForm)
+            {
+                <div class="write-review-prompt">
+                    <button class="button button-secondary" @onclick="@(() => showReviewForm = true)">
+                        Write a Review
+                    </button>
+                </div>
+            }
+            else
+            {
+                <ReviewForm ProductId="@ItemId" 
+                           OnSubmit="@HandleReviewSubmit" 
+                           OnCancel="@(() => showReviewForm = false)" />
+            }
+        }
+        else
+        {
+            <div class="login-prompt">
+                <p><a href="@Pages.User.LogIn.Url(Nav)">Log in</a> to write a review</p>
+            </div>
+        }
+        
+        <ReviewsList Reviews="@reviews" />
+    </div>
 }
 else if (notFound)
 {
@@ -65,6 +99,9 @@ else if (notFound)
     private int numInCart;
     private bool isLoggedIn;
     private bool notFound;
+    private bool showReviewForm = false;
+    private List<ProductReview> reviews = new();
+    private ProductRatingsSummary? ratingsSummary;
 
     [Parameter]
     public int ItemId { get; set; }
@@ -79,6 +116,7 @@ else if (notFound)
             isLoggedIn = HttpContext?.User.Identity?.IsAuthenticated == true;
             item = await CatalogService.GetCatalogItem(ItemId);
             await UpdateNumInCartAsync();
+            LoadSampleReviews();
         }
         catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
@@ -106,5 +144,63 @@ else if (notFound)
     {
         var items = await BasketState.GetBasketItemsAsync();
         numInCart = items.FirstOrDefault(row => row.ProductId == ItemId)?.Quantity ?? 0;
+    }
+
+    private void LoadSampleReviews()
+    {
+        // Sample reviews for demonstration
+        reviews = new List<ProductReview>
+        {
+            new(1, ItemId, "user1", "Alex Johnson", 5, "Excellent product! Exactly what I was looking for. Great quality and fast shipping.", DateTime.Now.AddDays(-30)),
+            new(2, ItemId, "user2", "Sarah Chen", 4, "Really good quality, though a bit pricey. Would recommend to others looking for this type of product.", DateTime.Now.AddDays(-15)),
+            new(3, ItemId, "user3", "Mike Rodriguez", 5, "Outstanding! Exceeded my expectations. The build quality is top-notch and it works perfectly.", DateTime.Now.AddDays(-7)),
+            new(4, ItemId, "user4", "Emma Wilson", 3, "Decent product but had some minor issues. Customer service was helpful in resolving them.", DateTime.Now.AddDays(-3)),
+            new(5, ItemId, "user5", "David Kim", 4, "Good value for money. Does exactly what it's supposed to do. No complaints!", DateTime.Now.AddDays(-1))
+        };
+
+        CalculateRatingsSummary();
+    }
+
+    private void CalculateRatingsSummary()
+    {
+        if (!reviews.Any())
+        {
+            ratingsSummary = null;
+            return;
+        }
+
+        var totalReviews = reviews.Count;
+        var averageRating = reviews.Average(r => r.StarRating);
+        var ratingCounts = new int[5];
+
+        foreach (var review in reviews)
+        {
+            if (review.StarRating >= 1 && review.StarRating <= 5)
+            {
+                ratingCounts[review.StarRating - 1]++;
+            }
+        }
+
+        ratingsSummary = new ProductRatingsSummary(averageRating, totalReviews, ratingCounts);
+    }
+
+    private async Task HandleReviewSubmit(ReviewForm.ProductReviewSubmission submission)
+    {
+        // Simulate adding a new review
+        var userName = HttpContext?.User.Identity?.Name ?? "Anonymous User";
+        var newReview = new ProductReview(
+            reviews.Count + 1,
+            submission.ProductId,
+            "current-user",
+            userName,
+            submission.StarRating,
+            submission.ReviewText,
+            DateTime.Now
+        );
+
+        reviews.Insert(0, newReview); // Add to beginning of list
+        CalculateRatingsSummary();
+        showReviewForm = false;
+        StateHasChanged();
     }
 }

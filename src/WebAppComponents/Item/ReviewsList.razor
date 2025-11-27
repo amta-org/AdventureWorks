@@ -1,0 +1,33 @@
+@namespace eShop.WebAppComponents.Item
+@using eShop.WebAppComponents.Item
+
+<div class="reviews-list">
+    @if (Reviews?.Any() == true)
+    {
+        @foreach (var review in Reviews)
+        {
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <span class="reviewer-name">@review.UserName</span>
+                        <span class="review-date">@review.CreatedDate.ToString("MMM dd, yyyy")</span>
+                    </div>
+                    <StarRating Rating="@review.StarRating" CssClass="small" />
+                </div>
+                <div class="review-content">
+                    <p>@review.ReviewText</p>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="no-reviews">
+            <p>No reviews yet. Be the first to review this product!</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<ProductReview>? Reviews { get; set; }
+}

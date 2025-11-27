@@ -1,0 +1,90 @@
+@namespace eShop.WebAppComponents.Item
+@using eShop.WebAppComponents.Item
+
+<div class="review-form">
+    <h3>Write a Review</h3>
+    
+    <EditForm Model="@reviewModel" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        
+        <div class="form-group">
+            <label for="rating">Rating</label>
+            <div class="rating-input">
+                <StarRating Rating="@reviewModel.StarRating" 
+                           OnStarClick="@((rating) => reviewModel.StarRating = rating)" 
+                           CssClass="large" />
+                <span class="rating-label">(@reviewModel.StarRating out of 5 stars)</span>
+            </div>
+            <ValidationMessage For="@(() => reviewModel.StarRating)" />
+        </div>
+
+        <div class="form-group">
+            <label for="reviewText">Review</label>
+            <InputTextArea @bind-Value="reviewModel.ReviewText" 
+                          id="reviewText" 
+                          placeholder="Share your thoughts about this product..."
+                          rows="4" />
+            <ValidationMessage For="@(() => reviewModel.ReviewText)" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button button-primary" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span>Submitting...</span>
+                }
+                else
+                {
+                    <span>Submit Review</span>
+                }
+            </button>
+            @if (OnCancel is not null)
+            {
+                <button type="button" class="button button-secondary" @onclick="OnCancel">
+                    Cancel
+                </button>
+            }
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public int ProductId { get; set; }
+    [Parameter] public EventCallback<ProductReviewSubmission> OnSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private ReviewFormModel reviewModel = new();
+    private bool isSubmitting = false;
+
+    private async Task HandleSubmit()
+    {
+        if (isSubmitting) return;
+        
+        isSubmitting = true;
+        
+        var submission = new ProductReviewSubmission(
+            ProductId,
+            reviewModel.StarRating,
+            reviewModel.ReviewText?.Trim() ?? ""
+        );
+
+        await OnSubmit.InvokeAsync(submission);
+        
+        // Reset form
+        reviewModel = new();
+        isSubmitting = false;
+    }
+
+    public class ReviewFormModel
+    {
+        [Range(1, 5, ErrorMessage = "Please select a rating from 1 to 5 stars")]
+        public int StarRating { get; set; } = 0;
+
+        [Required(ErrorMessage = "Please write a review")]
+        [StringLength(1000, ErrorMessage = "Review must be less than 1000 characters")]
+        [MinLength(10, ErrorMessage = "Review must be at least 10 characters")]
+        public string? ReviewText { get; set; }
+    }
+
+    public record ProductReviewSubmission(int ProductId, int StarRating, string ReviewText);
+}
