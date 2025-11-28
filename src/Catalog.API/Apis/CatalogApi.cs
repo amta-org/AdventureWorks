@@ -109,6 +109,9 @@ public static class CatalogApi
             .WithSummary("Delete catalog item")
             .WithDescription("Delete the specified catalog item");
 
+        // Map product reviews API endpoints
+        app.MapProductReviewsApi();
+
         return app;
     }
 
